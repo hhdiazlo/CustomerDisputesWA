@@ -7,3 +7,10 @@ coverage
 npm-debug.log
 .jshintrc
 .DS_Store
+.cfignore
+.eslintignore
+.eslintrc.yml
+.gitattributes
+.travis.yml
+Procfile
+package-lock.json
