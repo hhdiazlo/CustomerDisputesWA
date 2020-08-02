@@ -79,7 +79,7 @@ module.exports.buildDisputePayload = function (parameters, config){
     //Transaction
     var propertyTransactionItem = {};
     propertyTransactionItem.SymbolicName = "CI_transactionId";
-    propertyTransactionItem.Value = parameters[1].transaction;
+    propertyTransactionItem.Value = parameters[1].transaction + "";
 
     jsonPropertiesArray.push(propertyTransactionItem);
 
@@ -127,6 +127,7 @@ module.exports.executeDisputeRequest = function(payload, config, callback){
     }
     var options;
 
+	//rejectUnauthorized = false documented here: https://github.com/nodejs/help/issues/692
     options = {
           protocol: config.baw.protocol,
           url: config.baw.url,
@@ -137,13 +138,14 @@ module.exports.executeDisputeRequest = function(payload, config, callback){
              "Authorization" : config.baw.authtoken,
              "Content-Length" : payload.length
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+		  rejectUnauthorized: false
       }
 
     if (config.debug) {
       console.log("  == BAWHelper.js / executeDisputeRequest / options.url: " + options.url);
       console.log("  == BAWHelper.js / executeDisputeRequest / options.protocol: " + options.protocol);
-      console.log("  == BAWHelper.js / executeDisputeRequest / options.authorization: " + options.authtoken);
+      console.log("  == BAWHelper.js / executeDisputeRequest / options.authorization: " + options.headers.Authorization);
       console.log("  == BAWHelper.js / executeDisputeRequest / options.body: " + options.body);
     }
     var BAWCaseResult = "";
@@ -162,34 +164,40 @@ module.exports.executeDisputeRequest = function(payload, config, callback){
    }
 }; //executeDisputeRequest
 
-module.exports.formatUWResponse = function(BAWCMResponse, config){
-  var result = "";
-  if(config.debug){
-    console.log("  == BAWHelper.js / formatUWResponse / received: " + BAWCMResponse);
-  }
-  var JSONData = JSON.parse(BAWCMResponse);
-  if(BAWCMResponse != null){
-    if(JSONData.Identify_Diagnosis != null){
-      result += "<br>From your syptoms, my diagnosis is: <br>[ <b>" + JSONData.Identify_Diagnosis.disease + " </b>] <br>";
-      result += "Additional comments: <br>"
-      var index;
-      for(index in JSONData.Identify_Diagnosis.recommendations){
-        result += "<br>-" + JSONData.Identify_Diagnosis.recommendations[index] + " ";
-        index++;
-      }
+module.exports.formatDisputeResponse = function(BAWCMResponse, config){
+	/* Expected result sample:
+	{
+    "CaseIdentifier": "CI_SelfServiceDispute_000000100001",
+    "CaseTitle": "CI_SelfServiceDispute_000000100001",
+    "CaseFolderId": "{D010AD73-0000-C91E-B2E5-891A424B812D}"
+	}
+	*/
+	  var result = "";
+	  if(config.debug){
+		console.log("  == BAWHelper.js / formatDisputeResponse / received: " + BAWCMResponse);
+	  }
+	  
+	  if(BAWCMResponse != null){
+		var JSONData = JSON.parse(BAWCMResponse);
+		if(JSONData.CaseIdentifier != null){
+		  result += "<br>A case has been created for your dispute: <br> Case Identifier: [ <b>" + JSONData.CaseIdentifier + " </b>] <br>";
 
-      if(config.debug){
-        result += "<br>Decision ID: [" + JSONData.__DecisionID__ + "]";
-      }
-    }
-    else{
-      result += "<br>Unfortunately I was unable to determine a diagnosis with symptoms you shared. <br>";
-    }
-  }
-  if(config.debug){
-    console.log("  == BAWHelper.js / formatUWResponse / formatted response: " + result);
-  }
-  return result;
+		  if(config.debug){
+			result += "<br>----------------------------------------------------------------";
+			result += "<br>CaseIdentifier: [" + JSONData.CaseIdentifier + "]";
+			result += "<br>CaseTitle: [" + JSONData.CaseTitle + "]";
+			result += "<br>CaseFolderId: [" + JSONData.CaseFolderId + "]";
+		  }
+		}
+		else{
+		  result += "<br>Unfortunately I was not able to make your request.  Please try again in a few minutes. <br>";
+		  console.log("  =========== <ERROR>>>>> " + JSON.stringify(JSONData));
+		}
+	  }
+	  if(config.debug){
+		console.log("  == BAWHelper.js / formatDisputeResponse / formatted response: " + result);
+	  }
+	return result;
 }
 
 //}//helpers

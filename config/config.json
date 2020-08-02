@@ -1,7 +1,7 @@
 {
   "baw" : {
     "protocol": "https:",
-    "hostname": "IBMBAW",
+    "hostname": "wf-dc-poc.example.com",
     "port": 9443,
     "url": "https://wf-dc-poc.example.com:9443/CaseManager/CASEREST/v1/cases",
     "authtoken":"Basic YWRtaW46cGFzc3cwcmQ="

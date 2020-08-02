@@ -92,7 +92,6 @@ app.post('/api/message', function(req, res) {
     //console.log("app.js / message / data: " + JSON.stringify(data));
     if(data != null){
       if(data.result.context != null){
-        //console.log("app.js / message / data / external_call: " + data.result.context.skills.tags["main skill"].user_defined.external_call );
         let skillsJSONObject = JSON.parse(JSON.stringify(data.result.context.skills));
         if(skillsJSONObject['main skill'].user_defined != null){
           let chatPayload = JSON.stringify(skillsJSONObject['main skill'].user_defined.external_call);
@@ -104,24 +103,26 @@ app.post('/api/message', function(req, res) {
             if(config.debug){
               console.log("  >>> app.js / message / application: " + JSON.stringify(application));
             }
-            callExternalService(application, skillsJSONObject['main skill'].user_defined.external_call[0].parameters, function(err, rawBAWCMResult){
-              if(config.debug){
-                console.log("  >>> app.js / message /  BAWCMResult to be formatted: " + rawBAWCMResult);
-              }
-              var formattedResult = "";
-              formattedResult = BAWCMHelper.formatUWResponse(rawBAWCMResult, config);
-              if(config.debug){
-                console.log("  >>> app.js / message / formatted result to add to data: " + formattedResult);
-              }
-              let item = {};
-              item.response_type = "text";
-              item.text = formattedResult;
-              data.result.output.generic.push(item);
-              if(config.debug){
-                console.log("  >>> app.js / message / output to UI: " + JSON.stringify(data));
-              }
-              return res.json(data);
-            });
+            callExternalService(application, skillsJSONObject['main skill'].user_defined.external_call[0].parameters, 
+					function(err, rawBAWCMResult){
+					  if(config.debug){
+						console.log("  >>> app.js / message /  BAWCMResult from callExternalService: " + rawBAWCMResult);
+					  }
+					  var formattedResult = "";
+					  formattedResult = BAWCMHelper.formatDisputeResponse(rawBAWCMResult, config);
+					  if(config.debug){
+						console.log("  >>> app.js / message / result from formatDisputeResponse: " + formattedResult);
+					  }
+					  let item = {};
+					  item.response_type = "text";
+					  item.text = formattedResult;
+					  data.result.output.generic.push(item);
+					  if(config.debug){
+						console.log("  >>> app.js / message / output to UI: " + JSON.stringify(data));
+					  }
+					  return res.json(data);
+					}
+			);
           } // application != null
           else{
             console.log(">>>>>>>>>>>>> app.js / message / application is null ");
