@@ -2,53 +2,6 @@
 var request = require('request');
 /** This helper is used by the Assistant client to BAW - Case API **/
 
-function buildSymptomsPayload (symptomsString, config){
-  //Build a list of  symptoms in the following formatted
-  /*{
-    "name": "SHORTNESSOFBREATH"
-  }
-  */
-  if(config){
-    console.log("  ==== BAWHelper.js / buildSymptomsPayload / symptoms received: " + symptomsString);
-  }
-  var cleanedSystemsArray = symptomsString.replace("[", "");
-  cleanedSystemsArray = cleanedSystemsArray.replace("]", "");
-
-  if(config){
-    console.log("  ==== BAWHelper.js / buildSymptomsPayload / symptoms received - cleaned: " + cleanedSystemsArray);
-  }
-
-  var symptomsJSONFormat = "";
-  var counter =0;
-  //Loop for every sysmptoms
-  var symptomsArr = cleanedSystemsArray.split(",");
-  var jsonResult = {};
-  var jsonArraySymptoms = new Array();
-
-  for (const symptom of symptomsArr) {
-      if(config){
-        console.log("  ===== BAWHelper.js / buildSymptomsPayload extracted: " + symptom);
-      }
-      let item = {};
-      //removed double quotes and blank spaces
-      //https://stackoverflow.com/questions/6623231/remove-all-white-spaces-from-text
-      let cleanedSymptoms = symptom.replace(/\"/g, "");
-      cleanedSymptoms = cleanedSymptoms.replace(/ /g,'');
-      item.name = cleanedSymptoms;
-      jsonArraySymptoms.push(item);
-      //symptomsJSONFormat += "{ name : " + symptom + "}";
-      if(counter++ < symptomsArr.length-1){
-          symptomsJSONFormat += ",";
-      }
-  }
-  //jsonResult.Received_Symptoms = jsonArraySymptoms;
-
-  if(config){
-    console.log("  ==== BAWHelper.js / buildSymptomsPayload / JSON result: " + JSON.stringify(jsonArraySymptoms));
-  }
-
-  return jsonArraySymptoms;
-}
 
 module.exports.buildDisputePayload = function (parameters, config){
     if(config){
